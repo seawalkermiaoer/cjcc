@@ -1,0 +1,268 @@
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import supabase from '../utils/supabase'
+
+const props = defineProps({
+  storyId: {
+    type: String,
+    required: true
+  }
+})
+
+const emit = defineEmits(['back-to-list'])
+
+const storyData = ref(null)
+const currentScene = ref(0) // 使用索引而非场景ID
+const loading = ref(true)
+const error = ref(null)
+const storyTitle = ref('')
+
+async function fetchStoryData() {
+  try {
+    loading.value = true
+    
+    // 从Supabase获取故事数据
+    const { data, error: supabaseError } = await supabase
+      .from('stories')
+      .select('*')
+      .eq('id', props.storyId)
+      .single()
+    
+    if (supabaseError) throw supabaseError
+    
+    if (data) {
+      storyTitle.value = data.title || '互动故事'
+      
+      // 获取故事详情数据
+      const { data: storyDetailData, error: storyDetailError } = await supabase
+        .from('story_details')
+        .select('*')
+        .eq('id', props.storyId)
+        .single()
+      
+      if (storyDetailError) throw storyDetailError
+      
+      if (storyDetailData && storyDetailData.story) {
+        // 直接使用story字段中的数组数据
+        storyData.value = storyDetailData.story
+        
+        error.value = null // 清除可能存在的错误
+        return
+      }
+    }
+    
+    // 如果没有从Supabase获取到数据，抛出错误
+    throw new Error(`未找到ID为${props.storyId}的故事`)
+  } catch (err) {
+    console.error('Error fetching story data:', err)
+    error.value = '无法加载故事数据'
+  } finally {
+    loading.value = false
+  }
+}
+
+function handleChoice(choice) {
+  if (choice.consequence === 'exit') {
+    emit('back-to-list')
+    return
+  }
+  
+  // 如果consequence是数字，直接跳转到对应索引的场景
+  if (typeof choice.consequence === 'number') {
+    currentScene.value = choice.consequence
+    return
+  }
+  
+  // 如果consequence是字符串但不是exit，则视为特殊场景名称
+  // 需要在数组中查找对应的场景
+  if (typeof choice.consequence === 'string') {
+    const sceneIndex = storyData.value.findIndex(scene => 
+      scene.chapter && scene.chapter.includes(choice.consequence)
+    )
+    if (sceneIndex >= 0) {
+      currentScene.value = sceneIndex
+    }
+  }
+}
+
+onMounted(() => {
+  fetchStoryData()
+})
+
+watch(() => props.storyId, () => {
+  currentScene.value = 0 // 重置为第一个场景
+  fetchStoryData()
+})
+</script>
+
+<template>
+  <div class="interactive-story">
+    <button class="back-button" @click="emit('back-to-list')">
+      &larr; 返回故事列表
+    </button>
+    
+    <h2 class="story-title">{{ storyTitle }}</h2>
+    
+    <div v-if="loading" class="loading">
+      <p>加载中...</p>
+    </div>
+    
+    <div v-else-if="error" class="error">
+      <p>{{ error }}</p>
+      <button class="back-button" @click="emit('back-to-list')">
+        返回故事列表
+      </button>
+    </div>
+    
+    <div v-else-if="storyData && storyData[currentScene]" class="story-content">
+      <div class="story-node">
+        <h3 v-if="storyData[currentScene].chapter" class="chapter-title">{{ storyData[currentScene].chapter }}</h3>
+        <p class="story-text">{{ storyData[currentScene].text }}</p>
+        
+        <div v-if="storyData[currentScene].image" class="story-image">
+          <img :src="storyData[currentScene].image" :alt="storyData[currentScene].chapter || '故事场景'">
+        </div>
+        
+        <div class="story-choices">
+          <button 
+            v-for="(choice, index) in storyData[currentScene].choices || []" 
+            :key="index"
+            class="choice-button"
+            @click="handleChoice(choice)"
+          >
+            {{ choice.text }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div v-else class="error">
+      <p>无法加载故事内容，请返回故事列表重试</p>
+      <button class="back-button" @click="emit('back-to-list')">
+        返回故事列表
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.interactive-story {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.back-button {
+  background-color: transparent;
+  border: none;
+  color: #8B0000;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
+.story-title {
+  color: #8B0000;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 1rem;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+
+.story-content {
+  margin-top: 2rem;
+}
+
+.story-node {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.chapter-title {
+  color: #8B0000;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.story-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #333;
+  text-align: justify;
+}
+
+.story-image {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.story-image img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.story-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.choice-button {
+  background-color: #f8f4e5;
+  border: 1px solid #d3c6a6;
+  color: #8B0000;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.choice-button:hover {
+  background-color: #f0e9d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .interactive-story {
+    padding: 15px;
+  }
+  
+  .story-title {
+    font-size: 1.5rem;
+  }
+  
+  .story-text {
+    font-size: 1.1rem;
+  }
+  
+  .choice-button {
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+  }
+}
+</style>

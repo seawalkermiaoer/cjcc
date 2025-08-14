@@ -11,35 +11,7 @@
 - 精美的SVG插图
 - 使用Supabase存储故事数据
 
-## 技术栈
 
-- Vue 3 + Vite：前端框架和构建工具
-- Supabase：后端数据库和API服务
-- Vercel：部署和托管
-
-## 本地开发
-
-```shell
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
-
-## 部署
-
-使用Vercel进行部署：
-
-```shell
-$ vercel
-```
-
-## 数据库结构
-
-项目使用Supabase作为后端数据库，包含以下表结构：
-
-```sql
 CREATE TABLE stories (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -55,4 +27,3 @@ CREATE TABLE story_details (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),  -- 创建时间
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()   -- 更新时间
 );
-```
