@@ -12,40 +12,35 @@ const props = defineProps({
 const emit = defineEmits(['back-to-list'])
 
 const storyData = ref(null)
+const gameoverData = ref(null) // 存储gameover场景数据
 const currentScene = ref(0) // 使用索引而非场景ID
 const loading = ref(true)
 const error = ref(null)
 const storyTitle = ref('')
+const isGameover = ref(false) // 标记当前是否为gameover场景
 
 async function fetchStoryData() {
   try {
     loading.value = true
     
-    // 从Supabase获取故事数据
-    const { data, error: supabaseError } = await supabase
-      .from('stories')
+    // 直接从story_details表获取故事数据
+    const { data: storyDetailData, error: storyDetailError } = await supabase
+      .from('story_details')
       .select('*')
       .eq('id', props.storyId)
       .single()
     
-    if (supabaseError) throw supabaseError
+    if (storyDetailError) throw storyDetailError
     
-    if (data) {
-      storyTitle.value = data.title || '互动故事'
+    if (storyDetailData) {
+      // 从story_details中获取标题，如果没有则使用默认值
+      storyTitle.value = storyDetailData.title || '互动故事'
       
-      // 获取故事详情数据
-      const { data: storyDetailData, error: storyDetailError } = await supabase
-        .from('story_details')
-        .select('*')
-        .eq('id', props.storyId)
-        .single()
-      
-      if (storyDetailError) throw storyDetailError
-      
-      if (storyDetailData && storyDetailData.story) {
+      if (storyDetailData.story) {
         // 直接使用story字段中的数组数据
         storyData.value = storyDetailData.story
-        
+        // 加载gameover数据
+        gameoverData.value = storyDetailData.gameover || {}
         error.value = null // 清除可能存在的错误
         return
       }
@@ -67,6 +62,9 @@ function handleChoice(choice) {
     return
   }
   
+  // 重置gameover状态
+  isGameover.value = false
+  
   // 如果consequence是数字，直接跳转到对应索引的场景
   if (typeof choice.consequence === 'number') {
     currentScene.value = choice.consequence
@@ -74,11 +72,26 @@ function handleChoice(choice) {
   }
   
   // 如果consequence是字符串但不是exit，则视为特殊场景名称
-  // 需要在数组中查找对应的场景
   if (typeof choice.consequence === 'string') {
-    const sceneIndex = storyData.value.findIndex(scene => 
+    // 检查是否是gameover场景（以gameOver_开头）
+    if (choice.consequence.startsWith('gameOver_') && gameoverData.value && gameoverData.value[choice.consequence]) {
+      isGameover.value = true
+      currentScene.value = choice.consequence
+      return
+    }
+    
+    // 先检查chapter字段
+    let sceneIndex = storyData.value.findIndex(scene => 
       scene.chapter && scene.chapter.includes(choice.consequence)
     )
+    
+    // 如果在chapter中没找到，再检查gameover字段
+    if (sceneIndex < 0) {
+      sceneIndex = storyData.value.findIndex(scene => 
+        scene.gameover && scene.gameover.includes(choice.consequence)
+      )
+    }
+    
     if (sceneIndex >= 0) {
       currentScene.value = sceneIndex
     }
@@ -114,18 +127,44 @@ watch(() => props.storyId, () => {
       </button>
     </div>
     
-    <div v-else-if="storyData && storyData[currentScene]" class="story-content">
+    <!-- 显示普通故事场景 -->
+    <div v-else-if="storyData && storyData[currentScene] && !isGameover" class="story-content">
       <div class="story-node">
         <h3 v-if="storyData[currentScene].chapter" class="chapter-title">{{ storyData[currentScene].chapter }}</h3>
+        <h3 v-else-if="storyData[currentScene].gameover" class="chapter-title gameover-title">{{ storyData[currentScene].gameover }}</h3>
         <p class="story-text">{{ storyData[currentScene].text }}</p>
         
         <div v-if="storyData[currentScene].image" class="story-image">
-          <img :src="storyData[currentScene].image" :alt="storyData[currentScene].chapter || '故事场景'">
+          <img :src="storyData[currentScene].image" :alt="storyData[currentScene].chapter || storyData[currentScene].gameover || '故事场景'">
         </div>
         
         <div class="story-choices">
           <button 
             v-for="(choice, index) in storyData[currentScene].choices || []" 
+            :key="index"
+            class="choice-button"
+            @click="handleChoice(choice)"
+          >
+            {{ choice.text }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 显示gameover场景 -->
+    <div v-else-if="isGameover && gameoverData && gameoverData[currentScene]" class="story-content">
+      <div class="story-node">
+        <h3 v-if="gameoverData[currentScene].chapter" class="chapter-title">{{ gameoverData[currentScene].chapter }}</h3>
+        <h3 v-else class="chapter-title gameover-title">游戏结束</h3>
+        <p class="story-text">{{ gameoverData[currentScene].text }}</p>
+        
+        <div v-if="gameoverData[currentScene].image" class="story-image">
+          <img :src="gameoverData[currentScene].image" :alt="gameoverData[currentScene].chapter || '游戏结束'">
+        </div>
+        
+        <div class="story-choices">
+          <button 
+            v-for="(choice, index) in gameoverData[currentScene].choices || []" 
             :key="index"
             class="choice-button"
             @click="handleChoice(choice)"
@@ -202,6 +241,13 @@ watch(() => props.storyId, () => {
   font-size: 1.4rem;
   margin-bottom: 1rem;
   text-align: center;
+}
+
+.gameover-title {
+  color: #d9534f;
+  font-weight: bold;
+  border-bottom: 2px solid #d9534f;
+  padding-bottom: 0.5rem;
 }
 
 .story-text {

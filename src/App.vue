@@ -75,9 +75,10 @@ body {
   margin-bottom: 2rem;
   font-size: 2.2rem;
   position: relative;
-  display: inline-block;
-  left: 50%;
-  transform: translateX(-50%);
+  display: block;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .title::after {

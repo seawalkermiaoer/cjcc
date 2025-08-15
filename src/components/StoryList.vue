@@ -109,11 +109,7 @@ const filteredStories = computed(() => {
         :key="story.id"
         class="story-card"
       >
-        <div class="story-image">
-          <img v-if="story.cover_image" :src="story.cover_image" :alt="story.title" class="cover-image">
-          <!-- 使用默认图片作为占位符 -->
-          <div v-else class="placeholder-image"></div>
-        </div>
+
         <div class="story-info">
           <h2>{{ story.title }}</h2>
           <p>{{ story.description }}</p>
@@ -149,6 +145,7 @@ const filteredStories = computed(() => {
   font-size: 1rem;
   outline: none;
   font-family: inherit;
+  background-color: #fff;
 }
 
 .search-button {
@@ -189,27 +186,7 @@ const filteredStories = computed(() => {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.story-image {
-  width: 150px;
-  min-width: 150px;
-  background-color: #ff9e80;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.story-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.placeholder-image {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #ff9e80 0%, #ffab91 100%);
-  border-radius: 8px 0 0 8px;
-}
 
 .story-info {
   padding: 1.5rem;
@@ -236,6 +213,7 @@ const filteredStories = computed(() => {
   display: flex;
   gap: 10px;
   margin-top: 15px;
+  justify-content: flex-end;
 }
 
 .action-button {
@@ -275,11 +253,6 @@ const filteredStories = computed(() => {
   
   .story-card {
     flex-direction: column;
-  }
-  
-  .story-image {
-    width: 100%;
-    height: 120px;
   }
   
   .search-container {
