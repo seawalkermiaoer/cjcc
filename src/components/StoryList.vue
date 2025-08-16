@@ -145,18 +145,20 @@ const filteredStories = computed(() => {
   font-size: 1rem;
   outline: none;
   font-family: inherit;
-  background-color: #fff;
+  background-color: #f0f0f0;
 }
 
 .search-button {
-  background-color: #ff6b9d;
+  background-color: #58cc02;
   color: white;
   border: none;
   padding: 10px 20px;
-  border-radius: 0 5px 5px 0;
+  border-radius: 0 12px 12px 0;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 700;
   font-family: inherit;
+  box-shadow: 0 4px 0 #46a302;
 }
 
 .loading, .error {
@@ -176,9 +178,9 @@ const filteredStories = computed(() => {
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
-  background-color: #fff;
+  background-color: #fafafa;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .story-card:hover {
@@ -197,7 +199,7 @@ const filteredStories = computed(() => {
 
 .story-info h2 {
   margin-top: 0;
-  color: #ff6b9d;
+  color: #58cc02;
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
 }
@@ -217,32 +219,44 @@ const filteredStories = computed(() => {
 }
 
 .action-button {
-  background-color: #f8f4e5;
+  background-color: #e5e5e5;
   border: none;
-  color: #ff6b9d;
+  color: #1cb0f6;
   padding: 8px 15px;
   font-size: 0.9rem;
+  font-weight: 700;
   cursor: pointer;
-  border-radius: 20px;
+  border-radius: 12px;
   transition: all 0.3s;
   font-family: inherit;
   align-self: flex-end;
+  box-shadow: 0 2px 0 #d5d5d5;
 }
 
 .action-button:hover {
-  background-color: #f0e9d2;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #d5d5d5;
 }
 
 .action-button.interactive {
-  background-color: #ff6b9d;
+  background-color: #58cc02;
   color: #fff;
   border: none;
+  box-shadow: 0 4px 0 #46a302;
 }
 
 .action-button.interactive:hover {
-  background-color: #ff4b8d;
+  filter: brightness(1.1);
+}
+
+.action-button.interactive:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #46a302;
 }
 
 @media (max-width: 768px) {

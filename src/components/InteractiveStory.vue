@@ -189,15 +189,15 @@ watch(() => props.storyId, () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #fff;
+  background-color: #fafafa;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .back-button {
   background-color: transparent;
   border: none;
-  color: #8B0000;
+  color: #1cb0f6;
   font-size: 1rem;
   cursor: pointer;
   padding: 0.5rem 0;
@@ -205,6 +205,7 @@ watch(() => props.storyId, () => {
   display: flex;
   align-items: center;
   font-family: inherit;
+  box-shadow: none;
 }
 
 .back-button:hover {
@@ -212,7 +213,7 @@ watch(() => props.storyId, () => {
 }
 
 .story-title {
-  color: #8B0000;
+  color: #58cc02;
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
   text-align: center;
@@ -237,23 +238,23 @@ watch(() => props.storyId, () => {
 }
 
 .chapter-title {
-  color: #8B0000;
+  color: #58cc02;
   font-size: 1.4rem;
   margin-bottom: 1rem;
   text-align: center;
 }
 
 .gameover-title {
-  color: #d9534f;
+  color: #ff4b4b;
   font-weight: bold;
-  border-bottom: 2px solid #d9534f;
+  border-bottom: 2px solid #ff4b4b;
   padding-bottom: 0.5rem;
 }
 
 .story-text {
   font-size: 1.2rem;
   line-height: 1.8;
-  color: #333;
+  color: #4b4b4b;
   text-align: justify;
 }
 
@@ -275,22 +276,28 @@ watch(() => props.storyId, () => {
 }
 
 .choice-button {
-  background-color: #f8f4e5;
-  border: 1px solid #d3c6a6;
-  color: #8B0000;
-  padding: 1rem 1.5rem;
-  font-size: 1.1rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s;
+  background-color: #f0f0f0;
+  border: 2px solid #e5e5e5;
+  color: #4b4b4b;
+  padding: 12px 20px;
+  margin: 8px 0;
+  width: 100%;
   text-align: left;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s;
   font-family: inherit;
 }
 
 .choice-button:hover {
-  background-color: #f0e9d2;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #1cb0f6;
+  background-color: #e8e8e8;
+}
+
+.choice-button:active {
+  transform: translateY(1px);
 }
 
 @media (max-width: 768px) {
