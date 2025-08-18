@@ -9,6 +9,7 @@ const props = defineProps({
   }
 })
 
+
 const emit = defineEmits(['back-to-list'])
 
 const storyData = ref(null)
